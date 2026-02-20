@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import '../../../providers/auth_provider.dart';
+import '../controllers/auth_controller.dart';
 import '../../../core/utils/validators.dart';
 import '../../../app/app_router.dart';
 import '../model/register_request_model.dart';
@@ -8,7 +8,7 @@ import '../model/register_request_model.dart';
 // controls all logic for the register screen
 
 class RegisterViewModel extends GetxController {
-  final AuthProvider _authProvider = Get.find<AuthProvider>();
+  final AuthController _authController = Get.find<AuthController>();
 
   // -- form key --
   final formKey = GlobalKey<FormState>();
@@ -38,7 +38,7 @@ class RegisterViewModel extends GetxController {
 
     isLoading.value = true;
 
-    await _authProvider.register(
+    await _authController.register(
       RegisterRequestModel(
         name: nameController.text.trim(),
         email: emailController.text.trim(),
@@ -46,8 +46,8 @@ class RegisterViewModel extends GetxController {
       ),
     );
 
-    if (_authProvider.errorMessage.isNotEmpty) {
-      errorMessage.value = _authProvider.errorMessage.value;
+    if (_authController.errorMessage.isNotEmpty) {
+      errorMessage.value =_authController.errorMessage.value;
     }
 
     isLoading.value = false;

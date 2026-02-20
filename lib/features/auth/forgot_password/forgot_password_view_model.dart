@@ -1,12 +1,12 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import '../../../providers/auth_provider.dart';
+import '../controllers/auth_controller.dart';
 import '../../../core/utils/validators.dart';
 
 // controls all logic for the forgot password screen
 
 class ForgotPasswordViewModel extends GetxController {
-  final AuthProvider _authProvider = Get.find<AuthProvider>();
+  final AuthController _authController = Get.find<AuthController>();
 
   // -- form key --
   final formKey = GlobalKey<FormState>();
@@ -30,10 +30,10 @@ class ForgotPasswordViewModel extends GetxController {
 
     isLoading.value = true;
 
-    await _authProvider.forgotPassword(emailController.text.trim());
+    await _authController.forgotPassword(emailController.text.trim());
 
-    if (_authProvider.errorMessage.isNotEmpty) {
-      errorMessage.value = _authProvider.errorMessage.value;
+    if (_authController.errorMessage.isNotEmpty) {
+      errorMessage.value = _authController.errorMessage.value;
     } else {
       // show success state
       emailSent.value = true;

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import '../../../providers/auth_provider.dart';
+import '../controllers/auth_controller.dart';
 import '../../../core/utils/validators.dart';
 import '../../../app/app_router.dart';
 import '../model/login_request_model.dart';
@@ -9,7 +9,7 @@ import '../model/login_request_model.dart';
 // the view only calls methods from here, no logic in the view
 
 class LoginViewModel extends GetxController {
-  final AuthProvider _authProvider = Get.find<AuthProvider>();
+  final AuthController _authController = Get.find<AuthController>();
 
   // -- form key for validation --
   final formKey = GlobalKey<FormState>();
@@ -36,7 +36,7 @@ class LoginViewModel extends GetxController {
 
     isLoading.value = true;
 
-    await _authProvider.login(
+    await _authController.login(
       LoginRequestModel(
         email: emailController.text.trim(),
         password: passwordController.text,
@@ -44,8 +44,8 @@ class LoginViewModel extends GetxController {
     );
 
     // if auth provider has an error show it
-    if (_authProvider.errorMessage.isNotEmpty) {
-      errorMessage.value = _authProvider.errorMessage.value;
+    if (_authController.errorMessage.isNotEmpty) {
+      errorMessage.value = _authController.errorMessage.value;
     }
 
     isLoading.value = false;

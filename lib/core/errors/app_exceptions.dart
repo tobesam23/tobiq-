@@ -77,7 +77,7 @@ AuthException mapFirebaseAuthError(String code) {
       );
     default:
       return const AuthException(
-        message: 'Something went wrong. Please try again.',
+        message: 'Wrong Email or Password.',
         code: 'unknown',
       );
   }
