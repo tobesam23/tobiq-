@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"tobiq-app","appId":"1:725136438024:android:6d8a0abe85a4bc4a8c32bd","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"tobiq-app","configurations":{"android":"1:725136438024:android:6d8a0abe85a4bc4a8c32bd","ios":"1:725136438024:ios:b2c567738928333e8c32bd"}}}}}}

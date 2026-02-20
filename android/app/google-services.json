@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "725136438024",
+    "project_id": "tobiq-app",
+    "storage_bucket": "tobiq-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725136438024:android:6d8a0abe85a4bc4a8c32bd",
+        "android_client_info": {
+          "package_name": "com.example.tobiq"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBS_xsHpZ1Hgv9D2eQ1VzLGBPOsiwnaCsQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
