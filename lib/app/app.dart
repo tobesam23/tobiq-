@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../core/constants/app_colors.dart';
-import '../providers/auth_provider.dart';
+import '../features/auth/controllers/auth_controller.dart';
 import 'app_router.dart';
-
-// root of my app
-// getx initializes my global providers here so they're available everywhere
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -16,12 +13,11 @@ class App extends StatelessWidget {
       title: 'Tobiq',
       debugShowCheckedModeBanner: false,
 
-      // registering my global auth provider so it's available app-wide
+      // registering auth controller globally so it's available everywhere
       initialBinding: BindingsBuilder(() {
-        Get.put(AuthProvider(), permanent: true);
+        Get.put(AuthController(), permanent: true);
       }),
 
-      // setting up my color scheme from app_colors
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.scaffoldBg,
         colorScheme: ColorScheme.dark(
@@ -31,7 +27,6 @@ class App extends StatelessWidget {
         ),
       ),
 
-      // getx handles all my routing from app_router
       initialRoute: AppRoutes.splash,
       getPages: AppRouter.routes,
     );
