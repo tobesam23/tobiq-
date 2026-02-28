@@ -5,42 +5,43 @@ import '../model/register_response_model.dart';
 import '../service/auth_service.dart';
 import '../../../core/storage/secure_storage.dart';
 
-// the repository sits between the service and the viewmodel
-// it calls the service and also handles saving to secure storage
-// the viewmodel never talks to the service directly
+// repository sits between service and controller
+// handles saving to secure storage after every auth action
 
 class AuthRepository {
   final AuthService _authService = AuthService();
 
-  // -- login --
+  // -- email login --
   Future<LoginResponseModel> login(LoginRequestModel request) async {
     final response = await _authService.login(request);
-
-    // save session data locally after successful login
-    await SecureStorage.setLoggedIn(true);
-    await SecureStorage.setUserId(response.user.uid);
-    await SecureStorage.setUserEmail(response.user.email);
-
+    await _saveSession(response.user.uid, response.user.email);
     return response;
   }
 
-  // -- register --
+  // -- email register --
   Future<RegisterResponseModel> register(RegisterRequestModel request) async {
     final response = await _authService.register(request);
-
-    // save session data locally after successful registration
-    await SecureStorage.setLoggedIn(true);
-    await SecureStorage.setUserId(response.user.uid);
-    await SecureStorage.setUserEmail(response.user.email);
-
+    await _saveSession(response.user.uid, response.user.email);
     return response;
   }
 
-  // -- logout --
+  // -- google sign in --
+  Future<LoginResponseModel> signInWithGoogle() async {
+    final response = await _authService.signInWithGoogle();
+    await _saveSession(response.user.uid, response.user.email);
+    return response;
+  }
+
+  // -- facebook sign in --
+  Future<LoginResponseModel> signInWithFacebook() async {
+    final response = await _authService.signInWithFacebook();
+    await _saveSession(response.user.uid, response.user.email);
+    return response;
+  }
+
+    // -- logout --
   Future<void> logout() async {
     await _authService.logout();
-
-    // wipe everything from local storage on logout
     await SecureStorage.clearAll();
   }
 
@@ -52,5 +53,12 @@ class AuthRepository {
   // -- check if user is already logged in --
   Future<bool> isLoggedIn() async {
     return await SecureStorage.isLoggedIn();
+  }
+
+  // -- helper: save session to secure storage --
+  Future<void> _saveSession(String uid, String email) async {
+    await SecureStorage.setLoggedIn(true);
+    await SecureStorage.setUserId(uid);
+    await SecureStorage.setUserEmail(email);
   }
 }

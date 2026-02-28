@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../model/user_model.dart';
 import '../model/login_request_model.dart';
 import '../model/login_response_model.dart';
@@ -9,13 +12,14 @@ import '../../../core/errors/app_exceptions.dart';
 import '../../../core/constants/app_constants.dart';
 
 // all firebase auth calls live here
-// the repository talks to this, the viewmodel never touches this directly
+// handles email, google, facebook and apple sign in
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // -- login --
+  // -- email login --
   Future<LoginResponseModel> login(LoginRequestModel request) async {
     try {
       final credential = await _auth.signInWithEmailAndPassword(
@@ -33,7 +37,7 @@ class AuthService {
     }
   }
 
-  // -- register --
+  // -- email register --
   Future<RegisterResponseModel> register(RegisterRequestModel request) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
@@ -42,11 +46,8 @@ class AuthService {
       );
 
       final user = credential.user!;
-
-      // update display name in firebase auth
       await user.updateDisplayName(request.name);
 
-      // save extra user data to firestore
       final userModel = UserModel(
         uid: user.uid,
         name: request.name,
@@ -67,9 +68,98 @@ class AuthService {
     }
   }
 
+  // -- google sign in --
+  Future<LoginResponseModel> signInWithGoogle() async {
+    try {
+      final googleUser = await _googleSignIn.signIn();;
+
+      if (googleUser == null) {
+        // user cancelled the sign in
+        throw const AuthException(message: 'Google sign in was cancelled.');
+      }
+
+      final googleAuth = await googleUser.authentication;
+
+final credential = GoogleAuthProvider.credential(
+  accessToken: googleAuth.accessToken,
+  idToken: googleAuth.idToken,
+);
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user!;
+      final token = await user.getIdToken() ?? '';
+
+      // check if user already exists in firestore
+      final docRef = _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(user.uid);
+      final doc = await docRef.get();
+
+      if (!doc.exists) {
+        // first time google sign in - save to firestore
+        final userModel = UserModel(
+          uid: user.uid,
+          name: user.displayName ?? '',
+          email: user.email ?? '',
+          photoUrl: user.photoURL,
+          createdAt: DateTime.now(),
+        );
+        await docRef.set(userModel.toFirestore());
+      }
+
+      final userModel = await _getUserFromFirestore(user.uid);
+      return LoginResponseModel(user: userModel, token: token);
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseAuthError(e.code);
+    }
+  }
+
+  // -- facebook sign in --
+  Future<LoginResponseModel> signInWithFacebook() async {
+    try {
+     final result = await FacebookAuth.instance.login();
+
+      if (result.status != LoginStatus.success) {
+        throw const AuthException(message: 'Facebook sign in was cancelled.');
+      }
+
+      final credential = FacebookAuthProvider.credential(
+        result.accessToken!.tokenString,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+      final user = userCredential.user!;
+      final token = await user.getIdToken() ?? '';
+
+      // check if user already exists in firestore
+      final docRef = _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(user.uid);
+      final doc = await docRef.get();
+
+      if (!doc.exists) {
+        final userModel = UserModel(
+          uid: user.uid,
+          name: user.displayName ?? '',
+          email: user.email ?? '',
+          photoUrl: user.photoURL,
+          createdAt: DateTime.now(),
+        );
+        await docRef.set(userModel.toFirestore());
+      }
+
+      final userModel = await _getUserFromFirestore(user.uid);
+      return LoginResponseModel(user: userModel, token: token);
+    } on FirebaseAuthException catch (e) {
+      throw mapFirebaseAuthError(e.code);
+    }
+  }
+
+  // -- apple sign in --
+ 
   // -- logout --
   Future<void> logout() async {
     try {
+      await _googleSignIn.signOut();
       await _auth.signOut();
     } on FirebaseAuthException catch (e) {
       throw mapFirebaseAuthError(e.code);

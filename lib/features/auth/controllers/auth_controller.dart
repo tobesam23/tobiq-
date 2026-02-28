@@ -9,7 +9,7 @@ import '../model/user_model.dart';
 import '../repository/auth_repository.dart';
 
 // main auth controller - manages all auth state and logic
-// views and viewmodels interact with this, never with the repository directly
+// handles email, google, facebook and apple sign in
 
 class AuthController extends GetxController {
   final AuthRepository _authRepository = AuthRepository();
@@ -17,6 +17,7 @@ class AuthController extends GetxController {
   // -- observable state --
   final Rx<UserModel?> currentUser = Rx<UserModel?>(null);
   final RxBool isLoading = false.obs;
+  final RxBool isSocialLoading = false.obs; // separate loader for social buttons
   final RxString errorMessage = ''.obs;
   final RxBool isLoggedIn = false.obs;
 
@@ -30,7 +31,7 @@ class AuthController extends GetxController {
     isLoggedIn.value = await _authRepository.isLoggedIn();
   }
 
-  // -- login --
+  // -- email login --
   Future<void> login(LoginRequestModel request) async {
     try {
       _setLoading(true);
@@ -52,13 +53,14 @@ class AuthController extends GetxController {
     }
   }
 
-  // -- register --
+  // -- email register --
   Future<void> register(RegisterRequestModel request) async {
     try {
       _setLoading(true);
       _clearError();
 
-      final RegisterResponseModel response = await _authRepository.register(request);
+      final RegisterResponseModel response =
+          await _authRepository.register(request);
       currentUser.value = response.user;
       isLoggedIn.value = true;
 
@@ -74,7 +76,53 @@ class AuthController extends GetxController {
     }
   }
 
-  // -- logout --
+  // -- google sign in --
+  Future<void> signInWithGoogle() async {
+    try {
+      _setSocialLoading(true);
+      _clearError();
+
+      final LoginResponseModel response =
+          await _authRepository.signInWithGoogle();
+      currentUser.value = response.user;
+      isLoggedIn.value = true;
+
+      Get.offAllNamed(AppRoutes.home);
+    } on AuthException catch (e) {
+      _setError(e.message);
+    } on AppException catch (e) {
+      _setError(e.message);
+    } catch (e) {
+      _setError('Something went wrong. Please try again.');
+    } finally {
+      _setSocialLoading(false);
+    }
+  }
+
+  // -- facebook sign in --
+  Future<void> signInWithFacebook() async {
+    try {
+      _setSocialLoading(true);
+      _clearError();
+
+      final LoginResponseModel response =
+          await _authRepository.signInWithFacebook();
+      currentUser.value = response.user;
+      isLoggedIn.value = true;
+
+      Get.offAllNamed(AppRoutes.home);
+    } on AuthException catch (e) {
+      _setError(e.message);
+    } on AppException catch (e) {
+      _setError(e.message);
+    } catch (e) {
+      _setError('Something went wrong. Please try again.');
+    } finally {
+      _setSocialLoading(false);
+    }
+  }
+
+   // -- logout --
   Future<void> logout() async {
     try {
       _setLoading(true);
@@ -104,6 +152,7 @@ class AuthController extends GetxController {
 
   // -- helpers --
   void _setLoading(bool value) => isLoading.value = value;
+  void _setSocialLoading(bool value) => isSocialLoading.value = value;
   void _setError(String message) => errorMessage.value = message;
   void _clearError() => errorMessage.value = '';
 }

@@ -25,6 +25,10 @@ dependencies:
   flutter_secure_storage: ^9.0.0  # storing sensitive stuff like tokens locally on the device securely
   flutter_spinkit: ^5.2.0 # for loading spinners while waiting on async operations
   cupertino_icons: ^1.0.8
+  google_sign_in: ^6.2.1  # google sign in - handles signing in with a google account
+  sign_in_with_apple: ^6.1.1 # apple sign in - required for ios apps that offer social login
+  flutter_facebook_auth: ^7.0.1 # facebook sign in - handles signing in with a facebook account
+
 
 dev_dependencies:
   flutter_test:
